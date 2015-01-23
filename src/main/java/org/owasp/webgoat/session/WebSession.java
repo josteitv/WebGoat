@@ -15,10 +15,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.owasp.webgoat.lessons.AbstractLesson;
 import org.owasp.webgoat.lessons.Category;
 import org.owasp.webgoat.lessons.RandomLessonAdapter;
@@ -236,7 +238,7 @@ public class WebSession {
         this.context = context;
 
         course = new Course();
-        course.loadCourses(webgoatContext, context, "/");
+        course.loadCourses(webgoatContext, context);
     }
 
     public static synchronized Connection getConnection(WebSession s) throws SQLException {
@@ -559,8 +561,8 @@ public class WebSession {
      * @return The sourceFile value
      */
     public String getWebResource(String fileName) {
-        // Note: doesn't work for admin path! Maybe with a ../ attack
-        return (context.getRealPath(fileName));
+        String realPath = context.getRealPath(fileName);
+        return realPath != null ? realPath : fileName;
     }
 
     /**

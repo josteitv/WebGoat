@@ -2,17 +2,19 @@ package org.owasp.webgoat.session;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.LinkedList;
+
 import javax.servlet.ServletContext;
+
 import org.owasp.webgoat.HammerHead;
 import org.owasp.webgoat.lessons.AbstractLesson;
 import org.owasp.webgoat.lessons.Category;
-import org.owasp.webgoat.util.WebGoatI18N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,11 +105,12 @@ public class Course {
      */
     private static String getSourceFile(String className) {
         StringBuilder sb = new StringBuilder();
-
         sb.append(className.replace(".", "/"));
         sb.append(".java");
-
-        return sb.toString();
+        String sourceFile = sb.toString();
+        
+        
+        return sourceFile;
     }
 
     /**
@@ -133,12 +136,12 @@ public class Course {
         int index = fileName.indexOf("/WEB-INF/classes/");
         if (index != -1) {
             fileName = fileName.substring(index + "/WEB-INF/classes/".length(), fileName.length() - ext.length());
-            fileName = fileName.replace('/', '.');
-            fileName = fileName.replace('\\', '.');
         } else {
             // Strip off the leading path info
             fileName = fileName.substring(path.length(), fileName.length() - ext.length());
         }
+        fileName = fileName.replace('/', '.');
+        fileName = fileName.replace('\\', '.');
 
         return fileName;
     }
@@ -297,11 +300,35 @@ public class Course {
             if (file.length() != 1 && file.endsWith("/")) {
                 loadFiles(context, file);
             } else {
+                logger.debug("file: " + file);
                 files.add(file);
             }
         }
     }
 
+    private void loadFiles2(File directory) {
+        loadFiles3(directory, directory);
+    }
+    
+    private void loadFiles3(File baseDirectory, File directory) {
+        logger.debug("Loading files into cache, path: " + directory);
+        
+        for (File f : directory.listFiles()) {
+            if (f.isDirectory()) {
+                loadFiles3(baseDirectory, f);
+            } else {
+                String filename = f.getPath();
+                filename = filename.replace(baseDirectory.getPath(), "");
+                filename = filename.replace('\\', '/');
+                
+                logger.debug("filename: " + filename);
+                files.add(filename);
+            }
+            
+        }
+    }
+
+    
     /**
      * Instantiate all the lesson objects into a cache
      *
@@ -313,16 +340,16 @@ public class Course {
 
             if (className != null && !className.endsWith("_i")) {
                 try {
-                    Class c = Class.forName(className);
-                    Object o = c.newInstance();
-
-                    if (o instanceof AbstractLesson) {
+                    Class<?> c = Class.forName(className);
+                    if (AbstractLesson.class.isAssignableFrom(c) && !Modifier.isAbstract(c.getModifiers())) {
+                        Object o = c.newInstance();
                         AbstractLesson lesson = (AbstractLesson) o;
                         lesson.setWebgoatContext(webgoatContext);
 
                         lesson.update(properties);
 
                         if (lesson.getHidden() == false) {
+                            logger.debug("Lesson: " + lesson.getClass().getSimpleName());
                             lessons.add(lesson);
                         }
                     }
@@ -358,7 +385,14 @@ public class Course {
 
                 if (absoluteFile.endsWith(classFile)) {
                     logger.info("Set source file for " + classFile);
-                    lesson.setSourceFileName(absoluteFile);
+                    
+                    String f = absoluteFile;
+                    
+                    if (!new File(f).exists()) {
+                        f = "./src/main/java/" + f;
+                    }
+                    
+                    lesson.setSourceFileName(f);
                 }
 
                 if (absoluteFile.startsWith("/lesson_plans") && absoluteFile.endsWith(".html")
@@ -387,11 +421,14 @@ public class Course {
      * @param path Description of the Parameter
      * @param context Description of the Parameter
      */
-    public void loadCourses(WebgoatContext webgoatContext, ServletContext context, String path) {
-        logger.info("Loading courses: " + path);
+    public void loadCourses(WebgoatContext webgoatContext, ServletContext context) {
         this.webgoatContext = webgoatContext;
-        loadFiles(context, path);
-        loadLessons(path);
+        
+        loadFiles(context, "/");
+        loadFiles2(new File("./target/classes/"));
+        
+        
+        loadLessons("/");
         loadResources();
     }
 }

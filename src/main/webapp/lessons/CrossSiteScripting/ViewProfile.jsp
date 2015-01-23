@@ -30,6 +30,11 @@ WebSession webSession = ((WebSession)session.getAttribute("websession"));
 					</TD>
 					<TD>
 						<!-- STAGE 4 - FIX  Note that the description value below gets encoded and address1 here is not -->
+						<!-- 
+						   //
+                           // Assignment: Fix the stored XSS vulnerability!
+                           //
+                        -->
 
 						<%=employee.getAddress1()%>
 					</TD>

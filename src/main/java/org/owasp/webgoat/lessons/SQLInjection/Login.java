@@ -117,13 +117,15 @@ public class Login extends DefaultLessonAction
 
     public boolean login(WebSession s, String userId, String password)
     {
-        // System.out.println("Logging in to lesson");
         boolean authenticated = false;
 
         try
         {
+            //
+            // Assignment: Fix the SQL injection vulnerability!
+            //
+            
             String query = "SELECT * FROM employee WHERE userid = " + userId + " and password = '" + password + "'";
-            // System.out.println("Query:" + query);
             try
             {
                 Statement answer_statement = WebSession.getConnection(s)
@@ -146,7 +148,6 @@ public class Login extends DefaultLessonAction
             e.printStackTrace();
         }
 
-        // System.out.println("Lesson login result: " + authenticated);
         return authenticated;
     }
 

@@ -128,7 +128,11 @@ public class FindProfile extends DefaultLessonAction
     protected String getRequestParameter(WebSession s, String name) throws ParameterNotFoundException,
             ValidationException
     {
-
+        //
+        // Assignment: Fix the reflected XSS vulnerability!
+        //
+        
+        
         return s.getParser().getRawParameter(name);
     }
 

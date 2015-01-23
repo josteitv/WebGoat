@@ -109,10 +109,10 @@ public class UpdateProfile extends DefaultLessonAction
     protected Employee parseEmployeeProfile(int subjectId, WebSession s) throws ParameterNotFoundException,
             ValidationException
     {
-        // The input validation can be added using a parsing component
-        // or by using an inline regular expression. The parsing component
-        // is the better solution.
-
+        //
+        // Assignment: Fix the stored XSS vulnerability!
+        //
+        
         HttpServletRequest request = s.getRequest();
         String firstName = request.getParameter(CrossSiteScripting.FIRST_NAME);
         String lastName = request.getParameter(CrossSiteScripting.LAST_NAME);

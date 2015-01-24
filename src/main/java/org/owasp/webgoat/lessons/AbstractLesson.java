@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.ecs.Element;
 import org.apache.ecs.ElementContainer;
 import org.apache.ecs.StringElement;
@@ -504,7 +505,12 @@ public abstract class AbstractLesson extends Screen implements Comparable<Object
 
         try {
             logger.debug("Loading source file: " + getSourceFileName());
-            src = readFromFile(new BufferedReader(new FileReader(s.getWebResource(getSourceFileName()))), false);
+            String webResource = s.getWebResource(getSourceFileName());
+            if (webResource == null) {
+            	webResource = "dummy";
+            }
+            
+            src = readFromFile(new BufferedReader(new FileReader(webResource)), false);
 
         } catch (FileNotFoundException e) {
             s.setMessage("Could not find source file");
